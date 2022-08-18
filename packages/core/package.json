@@ -1,0 +1,22 @@
+{
+  "name": "@zzs-cli-dev/core",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "xyj <296576733@qq.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "lib/core.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "node ./__tests__/core.test.js"
+  },
+  "dependencies": {
+    "@zzs-cli-dev/utils": "^1.0.0"
+  }
+}

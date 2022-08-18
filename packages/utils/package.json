@@ -1,0 +1,19 @@
+{
+  "name": "@zzs-cli-dev/utils",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "xyj <296576733@qq.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "lib/utils.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "node ./__tests__/utils.test.js"
+  }
+}
