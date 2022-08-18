@@ -1,6 +1,6 @@
 {
   "name": "@zzs-cli-dev/core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "> TODO: description",
   "author": "",
   "homepage": "",
@@ -20,7 +20,7 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@zzs-cli-dev/utils": "^1.0.1"
+    "@zzs-cli-dev/utils": "^1.0.2"
   },
   "gitHead": "6e7e43262aa30a690b379ad40c90a6a6222013ca"
 }
