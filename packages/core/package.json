@@ -6,6 +6,9 @@
   "homepage": "",
   "license": "ISC",
   "main": "lib/core.js",
+  "bin": {
+    "zzs-cli-dev": "bin/index.js"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -18,5 +21,6 @@
   },
   "dependencies": {
     "@zzs-cli-dev/utils": "^1.0.1"
-  }
+  },
+  "gitHead": "6e7e43262aa30a690b379ad40c90a6a6222013ca"
 }
