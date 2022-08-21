@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@zzs-cli-dev/utils": "file:../../utils/utils",
-    "import-local": "^3.1.0",
-    "npmlog": "^6.0.2"
+    "@zzs-cli-dev/log": "file:../../utils/log",
+    "import-local": "^3.1.0"
   },
   "gitHead": "aeaf7ed453a609197dc4ef72e9c90fdf0d73e61b",
   "publishConfig": {

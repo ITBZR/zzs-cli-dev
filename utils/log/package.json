@@ -2,7 +2,7 @@
   "name": "@zzs-cli-dev/log",
   "version": "1.0.3",
   "description": "> TODO: description",
-  "author": "xyj <296576733@qq.com>",
+  "author": "bzr <2290715547@qq.com>",
   "homepage": "https://github.com/ITBZR/zzs-cli-dev#readme",
   "license": "ISC",
   "main": "lib/index.js",
@@ -25,5 +25,9 @@
   },
   "bugs": {
     "url": "https://github.com/ITBZR/zzs-cli-dev/issues"
+  },
+  "dependencies": {
+    "npmlog": "^6.0.2"
   }
+
 }

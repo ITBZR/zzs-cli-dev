@@ -6,7 +6,7 @@
  */
 'use strict';
 
-const pkg = require('../package.json')
+const log = require('@zzs-cli-dev/log')
 module.exports = core;
 module.exports.checkPkgVersion = checkPkgVersion;
 
@@ -17,5 +17,5 @@ function core() {
 
 // 版本号
 function checkPkgVersion () {
-    console.log(pkg.version)
+    log.success('test', 'success...')
 }
