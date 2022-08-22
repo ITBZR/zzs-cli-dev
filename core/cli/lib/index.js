@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-18 11:03:00
- * @LastEditTime: 2022-08-19 18:27:36
+ * @LastEditTime: 2022-08-22 17:46:44
  */
 'use strict';
 
@@ -10,11 +10,13 @@ const path = require('path')
 const userHome = require('user-home') // 获取用户主目录
 const pathExists = require('path-exists').sync // 检查文件是否存在
 const semver = require('semver') // 对比版本号
+const commander = require('commander')
 const colors = require('colors')
 const log = require('@zzs-cli-dev/log')
 const pkg = require('../package.json')
 const constant = require('./const')
 const { getNpmSemverVersions } = require('@zzs-cli-dev/get-npm-info')
+const init = require('@zzs-cli-dev/init')
 module.exports = core;
 module.exports.checkPkgVersion = checkPkgVersion;
 
@@ -22,18 +24,78 @@ module.exports.checkPkgVersion = checkPkgVersion;
 async function core() {
     console.log('core模块生效, 命令成功执行...');
     try {
-        chechUserHome()
-        checkRoot()
-        checkPkgVersion()
-        checkNodeVersion()
-        checkInputArgs()
-        checkEnv()
-        await checkGlobalUpdate()
+        await prepare()
+        registerCommand()
     } catch (error) {
         console.error(error.message)
     }
 }
-let args
+const program = new commander.Command()
+
+// 注册命令
+function registerCommand () {
+    program
+        .name(Object.keys(pkg.bin)[0])
+        .usage('<command> [options]')
+        .version(pkg.version)
+        .option('-d, --debug', '是否开始调试模式', false)
+        .option('-tp, --targetPath <targetPath>', '指定本地调试文件路径', '')
+
+    // 命令注册
+    program
+        .command('init [projectName]')
+        .option('-f, --force', '是否强制初始化项目')
+        .action(init)
+
+    // 实现debug模式
+    program.on('option:debug', function () {
+        process.env.LOG_LEVEL = 'verbose'
+        log.level = process.env.LOG_LEVEL
+        log.verbose('test')
+    })
+
+    // 监听路径指定
+    program.on('option:targetPath', function () {
+        const target = this.opts().targetPath
+        process.env.CLI_TARGET_PATH = target
+    })
+
+    // 实现指定变量缓存
+    program.on('option:debug', function () {
+        process.env.LOG_LEVEL = 'verbose'
+        log.level = process.env.LOG_LEVEL
+        log.verbose('test')
+    })
+
+    // 全局命令捕获
+    program.on('command:*', function (obj) {
+        // 未知命令捕获
+        const availableCommands = program.commands.map((cmd) => cmd.name())
+        console.log(colors.red(`未知命令：${obj[0]}`))
+
+        // 可用命令提示
+        if (availableCommands.length) {
+            console.log(colors.blue(`可用命令${availableCommands.join(', ')}`))
+        }
+
+        // 弹出帮助文档
+        program.outputHelp()
+        console.log()
+    })
+
+
+    program.parse(process.argv)
+}
+
+// 脚手架预备检测
+async function prepare () {
+    chechUserHome()
+    checkRoot()
+    checkPkgVersion()
+    checkNodeVersion()
+    checkEnv()
+    await checkGlobalUpdate()
+}
 
 // 检测npm版本
 async function checkGlobalUpdate () {
@@ -41,7 +103,7 @@ async function checkGlobalUpdate () {
     const currentVersion = pkg.version
     const npmName = pkg.name
     // 2.调用npmApi获取所有的版本号
-    const lastVersion = await getNpmSemverVersions(currentVersion, '@imooc-cli/core')
+    const lastVersion = await getNpmSemverVersions(currentVersion, pkg.name)
     if (lastVersion && semver.gt(lastVersion, currentVersion)) {
         log.warn(colors.yellow(`
             请手动更新  ${npmName},
@@ -80,22 +142,6 @@ function createDefaultConfig () {
     return cliConfig
 }
 
-// 获取输入的命令
-function checkInputArgs () {
-    const minimist = require('minimist')
-    args = minimist(process.argv.slice(2))
-    checkArgs()
-}
-
-// 命令分析
-function checkArgs () {
-    if (args.debug) {
-        process.env.LOG_LEVEL = 'verbose'
-    } else {
-        process.env.LOG_LEVEL = 'info'
-    }
-    log.level = 'verbose'
-}
 
 // 检查用户主目录
 function chechUserHome () {

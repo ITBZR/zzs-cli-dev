@@ -2,18 +2,14 @@
 0 silly argv   _: [ 'create' ],
 0 silly argv   lernaVersion: '5.4.3',
 0 silly argv   '$0': 'C:\\Program Files\\nodejs\\node_modules\\lerna\\cli.js',
-0 silly argv   name: 'get-npm-ingo',
-0 silly argv   loc: 'utils/'
+0 silly argv   name: '@zzs-cli-dev',
+0 silly argv   loc: 'commands/'
 0 silly argv }
 1 notice cli v5.4.3
-2 verbose rootPath C:\Users\Admin\Desktop\my-project\zzs-cli-dev
-3 error Error: canceled
-3 error     at Interface.<anonymous> (C:\Users\Admin\Desktop\my-project\zzs-cli-dev\node_modules\read\lib\read.js:66:13)
-3 error     at Interface.emit (node:events:390:28)
-3 error     at Interface.[_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:973:18)
-3 error     at ReadStream.onkeypress (node:internal/readline/interface:240:20)
-3 error     at ReadStream.emit (node:events:390:28)
-3 error     at emitKeys (node:internal/readline/utils:358:14)
-3 error     at emitKeys.next (<anonymous>)
-3 error     at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
-3 error     at ReadStream.emit (node:events:390:28)
+2 verbose rootPath C:\Users\l1536\Desktop\zzs-cli-dev
+3 error Error: Invalid tag name "@zzs-cli-dev": Tags may not have any characters that encodeURIComponent encodes.
+3 error     at invalidTagName (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\npm-package-arg\npa.js:94:15)
+3 error     at fromRegistry (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\npm-package-arg\npa.js:299:13)
+3 error     at resolve (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\npm-package-arg\npa.js:84:12)
+3 error     at npa (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\npm-package-arg\npa.js:55:10)
+3 error     at CreateCommand.initialize (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\@lerna\create\index.js:54:29)
