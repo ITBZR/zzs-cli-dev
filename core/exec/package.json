@@ -1,6 +1,6 @@
 {
   "name": "@zzs-cli-dev/exec",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "> TODO: description",
   "author": "xyj <296576733@qq.com>",
   "homepage": "https://github.com/ITBZR/zzs-cli-dev#readme",
@@ -27,7 +27,7 @@
     "url": "https://github.com/ITBZR/zzs-cli-dev/issues"
   },
   "dependencies": {
-    "@zzs-cli-dev/package": "file: ../../models/package",
-    "@zzs-cli-dev/log": "file: ../../utils/log"
+    "@zzs-cli-dev/log": "file: ../../utils/log",
+    "@zzs-cli-dev/package": "file: ../../models/package"
   }
 }
