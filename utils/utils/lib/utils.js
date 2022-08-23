@@ -1,7 +1,15 @@
+/*
+ * @Descripttion: 
+ * @Author: BZR
+ * @Date: 2022-08-18 11:23:36
+ * @LastEditTime: 2022-08-23 10:52:07
+ */
 'use strict';
 
-module.exports = utils;
+function isObject (o) {
+    return Object.prototype.toString.call(o) === '[object Object]'
+}
 
-function utils() {
-    return "Hello from utils";
+module.exports = {
+    isObject
 }

@@ -1,0 +1,29 @@
+{
+  "name": "@zzs-cli-dev/format-path",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "xyj <296576733@qq.com>",
+  "homepage": "https://github.com/ITBZR/zzs-cli-dev#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ITBZR/zzs-cli-dev.git"
+  },
+  "scripts": {
+    "test": "node ./__tests__/@zzs-cli-dev/format-path.test.js"
+  },
+  "bugs": {
+    "url": "https://github.com/ITBZR/zzs-cli-dev/issues"
+  }
+}

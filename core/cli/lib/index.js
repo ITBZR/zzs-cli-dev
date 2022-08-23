@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-18 11:03:00
- * @LastEditTime: 2022-08-22 17:46:44
+ * @LastEditTime: 2022-08-23 15:47:53
  */
 'use strict';
 
@@ -17,6 +17,7 @@ const pkg = require('../package.json')
 const constant = require('./const')
 const { getNpmSemverVersions } = require('@zzs-cli-dev/get-npm-info')
 const init = require('@zzs-cli-dev/init')
+const exec = require('@zzs-cli-dev/exec')
 module.exports = core;
 module.exports.checkPkgVersion = checkPkgVersion;
 
@@ -45,7 +46,7 @@ function registerCommand () {
     program
         .command('init [projectName]')
         .option('-f, --force', '是否强制初始化项目')
-        .action(init)
+        .action(exec)
 
     // 实现debug模式
     program.on('option:debug', function () {
