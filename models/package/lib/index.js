@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-23 10:13:34
- * @LastEditTime: 2022-08-23 17:28:14
+ * @LastEditTime: 2022-08-24 16:27:21
  */
 'use strict';
 
@@ -10,9 +10,10 @@ const path = require('path')
 const pkgDir = require('pkg-dir').sync
 const npminstall = require('npminstall')
 const pathExists = require('path-exists')
+const fse = require('fs-extra')
 const { isObject } = require('@zzs-cli-dev/utils')
 const formatPath = require('@zzs-cli-dev/format-path')
-const { getDefaultRegistry, getNpmLatestVersions } = require('@zzs-cli-dev/get-npm-info')
+const { getDefaultRegistry, getNpmLatestVersion } = require('@zzs-cli-dev/get-npm-info')
 class Package {
     constructor(options = {
         targetPath: '',
@@ -34,13 +35,18 @@ class Package {
         this.packageName = options.packageName
         // package的版本号
         this.packageVersion = options.packageVersion
+        // this.packageVersion = '1.1.0'
         // package的缓存目录前缀
         this.cacheFilePathPrefix = this.packageName.replace('/', '_')
     }
 
     async prepare () {
+        // 如果缓存文件不存在， 生成缓存文件
+        if (this.storePath && !pathExists(this.storePath)) {
+            fse.mkdirpSync(this.storePath)
+        }
         if (this.packageVersion === 'latest') {
-            this.packageVersion = await getNpmLatestVersions(this.packageVersion, this.packageName)
+            this.packageVersion = await getNpmLatestVersion(this.packageVersion, this.packageName)
         }
     }
 
@@ -59,6 +65,11 @@ class Package {
         return path.resolve(this.storePath, `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`)
     }
 
+    // 拼接指定版本的缓存路径
+    getSpeficCacheFilePath (packageVersion) {
+        return path.resolve(this.storePath, `_${this.cacheFilePathPrefix}@${packageVersion}@${this.packageName}`)
+    }
+
     // 下载package
     install () {
         return npminstall({
@@ -74,22 +85,50 @@ class Package {
     }
 
     // 更新package
-    update () {}
+    async update () {
+        await this.prepare()
+        // 1.获取最新的npm模块版本号
+        const latestPackageVersion = await getNpmLatestVersion(this.packageVersion, this.packageName)
+        const latestFilePath = this.getSpeficCacheFilePath(latestPackageVersion)
+        // 2.查询最新版本号对应的路径是否存在
+        if (!pathExists(latestFilePath)) {
+            // 3.如果不存在，则直接安装最新版本
+            return npminstall({
+                root: this.targetPath,
+                storeDir: this.storePath,
+                registry: getDefaultRegistry(),
+                pkgs: [
+                    {
+                        name: this.packageName, version: latestPackageVersion
+                    }
+                ]
+            })
+        }
+        this.packageVersion = latestPackageVersion
+        return latestFilePath
+    }
 
     // 获取入口文件路径
     getRootFilePath () {
         // 1.获取package.json的所在目录
-        const dir = pkgDir(this.targetPath)
-        if (dir) {
-            // 2.读取package.json
-            const pkgFile = require(path.resolve(dir, 'package.json'))
-            // 3.寻找main/lib
-            if (pkgFile && pkgFile.main) {
-                // 4.路径的兼容(macOS/windows)
-                return formatPath(path.resolve(dir, pkgFile.main))
+        function _getRootFile (targetpath) {
+            const dir = pkgDir(targetpath)
+            if (dir) {
+                // 2.读取package.json
+                const pkgFile = require(path.resolve(dir, 'package.json'))
+                // 3.寻找main/lib
+                if (pkgFile && pkgFile.main) {
+                    // 4.路径的兼容(macOS/windows)
+                    return formatPath(path.resolve(dir, pkgFile.main))
+                }
             }
+            return null
         }
-        return null
+        if (this.storePath) {
+            return _getRootFile(this.cacheFilePath)
+        } else {
+            return _getRootFile(this.targetPath)
+        }
     }
 }
 

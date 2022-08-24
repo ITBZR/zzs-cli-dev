@@ -1,4 +1,0 @@
-90 error Error: Command failed with exit code 128: git push --follow-tags --no-verify --atomic origin main
-90 error fatal: unable to access 'https://github.com/ITBZR/zzs-cli-dev.git/': OpenSSL SSL_read: Connection was reset, errno 10054
-90 error     at makeError (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\execa\lib\error.js:60:11)
-90 error     at handlePromise (C:\Users\l1536\Desktop\zzs-cli-dev\node_modules\execa\index.js:118:26)

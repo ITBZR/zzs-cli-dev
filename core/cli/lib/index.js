@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-18 11:03:00
- * @LastEditTime: 2022-08-23 15:47:53
+ * @LastEditTime: 2022-08-24 16:25:56
  */
 'use strict';
 
@@ -93,7 +93,6 @@ async function prepare () {
     chechUserHome()
     checkRoot()
     checkPkgVersion()
-    checkNodeVersion()
     checkEnv()
     await checkGlobalUpdate()
 }
@@ -160,13 +159,4 @@ function checkRoot () {
 // 获取当前cli版本号
 function checkPkgVersion () {
     log.notice('cli', pkg.version)
-}
-
-// 获取最低node版本
-function checkNodeVersion () {
-    const currentNodeVersion = process.version
-    const lowestNodeVersion = constant.LOWEST_NODE_VERSION
-    if (!semver.gte(currentNodeVersion, lowestNodeVersion)) {
-        throw new Error(colors.red(`zzs-cli 需要安装  ${currentNodeVersion}以上版本的Node`))
-    }
 }
