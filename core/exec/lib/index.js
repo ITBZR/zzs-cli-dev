@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-23 09:33:00
- * @LastEditTime: 2022-08-24 17:55:29
+ * @LastEditTime: 2022-08-25 11:35:51
  */
 'use strict';
 const path = require('path')
@@ -105,7 +105,6 @@ async function exec(argv) {
                 return cp.spawn(cmd, cmdArgs, options || {})
             }
 
-            
         } catch (error) {
             console.error(error.message)
         }
