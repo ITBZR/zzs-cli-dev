@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-22 16:31:54
- * @LastEditTime: 2022-08-30 11:11:19
+ * @LastEditTime: 2022-08-31 17:36:07
  */
 'use strict';
 const fs = require('fs')
@@ -11,14 +11,21 @@ const fse = require('fs-extra')
 const inquirer = require('inquirer')
 const semver = require('semver')
 const userHome = require('user-home')
+const ejs = require('ejs')
 const Command = require('@zzs-cli-dev/command')
 const Package = require('@zzs-cli-dev/package')
 const utils = require('@zzs-cli-dev/utils')
 const log = require('@zzs-cli-dev/log');
 const { type } = require('os');
 const getProjectTemplate = require('./getProjectTemplate')
+
 const TYPE_PROJECT = 'project'
 const TYPE_COMPONENT = 'component'
+
+const TEMPLATE_TYPE_NORMAL = 'normal'
+const TEMPLATE_TYPE_CUSTOM = 'custom'
+
+const WHITE_COMMAND = ['npm', 'cnpm', 'yarn']
 
 class InitCommand extends Command {
     init () {
@@ -29,18 +36,132 @@ class InitCommand extends Command {
     }
     async exec () {
         try {
+            // 1.准备阶段
             const projectInfo = await this.prepare()
             if (projectInfo) {
+                // 2.下载模板
                 log.verbose('projectInfo', projectInfo)
                 this.projectInfo = projectInfo
-                // 根据项目信息下载模板
                 await this.downloadTemplate()
+                // 3.安装模板
+                await this.installTemplate()
             }
         } catch (error) {
             log.error(error.message)
         }
     }
 
+    // 安装模板
+    async installTemplate() {
+        if (this.templateInfo) {
+            if (!this.templateInfo.type) {
+                this.templateInfo.type = TEMPLATE_TYPE_NORMAL
+            }
+            if (this.templateInfo.type === TEMPLATE_TYPE_NORMAL) {
+                await this.installNormalTemplate()
+                // 标准安装
+                return
+            }
+            if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
+                log.verbose('自定义安装')
+                // 自定义安装
+                return
+            }
+            throw new Error('不能识别的模板类型！')
+        }
+        throw new Error('项目模板信息不存在！')
+    }
+
+    // 命令白名单验证
+    checkCommand(cmd) {
+        if (WHITE_COMMAND.includes(cmd)) {
+            return cmd
+        }
+        return null
+    }
+
+    async execCommand (command, msg = '命令执行失败') {
+        if (command) {
+            const cmdList = command.split(' ')
+            const cmd = this.checkCommand(cmdList[0])
+            if (!cmd) {
+                throw new Error(`命令${command}不存在，或被禁止使用`)
+            }
+            const args = cmdList.slice(1)
+            const ret = await utils.execAsync(cmd, args, {
+                stdio: 'inherit',
+                cwd: process.cwd()
+            })
+            if (ret !== 0) {
+                throw new Error(msg)
+            }
+            return ret
+        }
+    }
+
+    async installNormalTemplate() {
+        log.verbose('安装标准模板')
+        // 0.拷贝模板到当前目录
+        const spinner = utils.spinnerStart('正在安装模板...')
+        try {
+            const templatePath = path.resolve(this.templateNpm.cacheFilePath, 'template')
+            const targetPath = process.cwd()
+            fse.ensureDirSync(templatePath)
+            fse.ensureDirSync(targetPath)
+            fse.copySync(templatePath, targetPath)
+            spinner.stop(true)
+            log.success('模板安装完成')
+        } catch (error) {
+            spinner.stop(true)
+            throw error
+        }
+        // 1.模板渲染
+        const ignore = ['noode_modules/**']
+        await this.ejsRender({ignore})
+        // 2.依赖安装
+        const { startCommand, installCommand } = this.templateInfo
+        await this.execCommand(installCommand, '依赖安装失败')
+        // 3.命令启动
+        await this.execCommand(startCommand, '启动失败')
+    }
+
+    async ejsRender({ ignore = [] }) {
+        const dir = process.cwd()
+        return new Promise((resolve, reject) => {
+            require('glob')('**', {
+                cwd: dir,
+                ignore,
+                nodir: true,
+            }, (err, files) => {
+                if (err) {
+                    reject(err)
+                }
+                Promise.all(files.map(file => {
+                    const filePath = path.join(dir, file)
+                    return new Promise((resolve1, reject1) => {
+                        ejs.renderFile(filePath, this.projectInfo, {}, (err, ret) => {
+                            if (err) {
+                                reject1(err)
+                            } else {
+                                fse.writeFileSync(filePath, ret)
+                                resolve1(ret)
+                            }
+                        })
+                    })
+                })).then(() => {
+                    resolve()
+                }).catch(err => {
+                    reject(err)
+                })
+            })
+        })
+    }
+
+    async installCustomTemplate() {
+        log.verbose('安装自定义模板')
+    }
+
+    // 下载模板
     async downloadTemplate() {
         // 1.通过项目模板API获取模板信息
         // 2.通过egg.js搭建一套后端系统
@@ -51,6 +172,7 @@ class InitCommand extends Command {
         // 1.根据选择获取项目模板信息
         const { projectTemplate } = this.projectInfo
         const templateInfo = this.template.find((v) => v.npmName === projectTemplate)
+        this.templateInfo = templateInfo
         // 2.获取用户目录和缓存目录
         const targetPath = path.resolve(userHome, '.zzs-cli-dev', 'template')
         const storePath = path.resolve(userHome, '.zzs-cli-dev', 'template', 'node_modules')
@@ -61,6 +183,7 @@ class InitCommand extends Command {
             packageName: templateInfo.npmName,
             packageVersion: templateInfo.version
         })
+        this.templateNpm = templateNpm
         if (await templateNpm.exists()) {
             log.verbose('当前目录存在， 更新项目')
             const spinner = utils.spinnerStart('玩命更新中...')
@@ -138,28 +261,12 @@ class InitCommand extends Command {
                 }
             ]
         })
+        function validateProjectName(name) {
+            return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(name)
+        }
+        let projectInfo = {}
         if (type === TYPE_PROJECT) {
-            // 4.获取项目的基本信息
-            const info = await inquirer.prompt([
-                {
-                    type: 'input',
-                    name: 'projectName',
-                    message: '请输入项目名称',
-                    default: '',
-                    validate: function (name) {
-                        const done = this.async()
-                        setTimeout(function () {
-                            if (!/^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(name)) {
-                                done('请输入合法的项目名称')
-                                return
-                            }
-                            done(null, true)
-                        }, 0)
-                    },
-                    filter: function (name) {
-                        return name
-                    }
-                },
+            const promptList = [
                 {
                     type: 'input',
                     name: 'projectVersion',
@@ -185,14 +292,48 @@ class InitCommand extends Command {
                     message: '请选择项目模板',
                     choices: this.createTemplateChoice()
                 }
-            ])
-            const projectInfo = {
+            ]
+            const projectNamePrompt = {
+                type: 'input',
+                name: 'projectName',
+                message: '请输入项目名称',
+                default: '',
+                validate: function (name) {
+                    const done = this.async()
+                    setTimeout(function () {
+                        if (!validateProjectName(name)) {
+                            done('请输入合法的项目名称')
+                            return
+                        }
+                        done(null, true)
+                    }, 0)
+                },
+                filter: function (name) {
+                    return name
+                }
+            }
+            if (!validateProjectName(this.projectName)) {
+                promptList.unshift(projectNamePrompt)
+            } else {
+                projectInfo.name = this.projectName
+            }
+            // 4.获取项目的基本信息
+            const info = await inquirer.prompt(promptList)
+            projectInfo = {
+                ...projectInfo,
                 type,
                 ...info
             }
-            return projectInfo
         } else {
         }
+        if (projectInfo.projectName) {
+            // 大驼峰变横线分割
+            projectInfo.name = require('kebab-case')(projectInfo.projectName).replace(/^-/, '')
+        }
+        if (projectInfo.projectVersion) {
+            projectInfo.version = projectInfo.projectVersion
+        }
+        return projectInfo
     }
     
     // 判断目录是否为空
