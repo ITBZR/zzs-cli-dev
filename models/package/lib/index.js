@@ -2,16 +2,16 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-23 10:13:34
- * @LastEditTime: 2022-08-24 16:27:21
+ * @LastEditTime: 2022-08-30 18:31:19
  */
 'use strict';
 
 const path = require('path')
 const pkgDir = require('pkg-dir').sync
 const npminstall = require('npminstall')
-const pathExists = require('path-exists')
+const pathExists = require('path-exists').sync
 const fse = require('fs-extra')
-const { isObject } = require('@zzs-cli-dev/utils')
+const { isObject } = require('@zzs-cli-dev/utils/lib')
 const formatPath = require('@zzs-cli-dev/format-path')
 const { getDefaultRegistry, getNpmLatestVersion } = require('@zzs-cli-dev/get-npm-info')
 class Package {
@@ -54,9 +54,11 @@ class Package {
     async exists () {
         if (this.storePath) {
             await this.prepare()
-            return pathExists(this.cacheFilePath)
+            const isExists = await pathExists(this.cacheFilePath)
+            return isExists
         } else {
-            return await pathExists(this.targetPath)
+            const isExists = await pathExists(this.targetPath)
+            return isExists
         }
     }
 
@@ -99,7 +101,8 @@ class Package {
                 registry: getDefaultRegistry(),
                 pkgs: [
                     {
-                        name: this.packageName, version: latestPackageVersion
+                        name: this.packageName,
+                        version: latestPackageVersion
                     }
                 ]
             })
@@ -112,7 +115,7 @@ class Package {
     getRootFilePath () {
         // 1.获取package.json的所在目录
         function _getRootFile (targetpath) {
-            const dir = pkgDir(targetpath)
+            const dir = pkgDir(targetpath)  
             if (dir) {
                 // 2.读取package.json
                 const pkgFile = require(path.resolve(dir, 'package.json'))

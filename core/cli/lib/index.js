@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-18 11:03:00
- * @LastEditTime: 2022-08-24 16:25:56
+ * @LastEditTime: 2022-08-29 15:11:10
  */
 'use strict';
 
@@ -25,6 +25,7 @@ module.exports.checkPkgVersion = checkPkgVersion;
 async function core() {
     console.log('core模块生效, 命令成功执行...');
     try {
+        // wellcome()
         await prepare()
         registerCommand()
     } catch (error) {
@@ -32,6 +33,46 @@ async function core() {
     }
 }
 const program = new commander.Command()
+
+function wellcome () {
+    const template = (text = '穷且弥坚，不堕青云之志') => `
+                 __._                                   
+                / ___)_                                 
+               (_/Y ===\\                            __ 
+               |||.==. =).                            | 
+               |((| o |p|      |  ${text}
+            _./| \\(  /=\\ )     |__                    
+          /  |@\\ ||||||||.                             
+         /    \\@\\ ||||||||\\                          
+        /   \\  \\@\\ ||||||//\\                        
+       (     Y  \\@\\|||| // _\\                        
+       |    -\\   \\@\\ \\\\//    \\                    
+       |     -\\__.-./ //\\.---.^__                        
+       | \\    /  |@|__/\\_|@|  |  |                         
+       \\__\\      |@||| |||@|     |                    
+       <@@@|     |@||| |||@|    /                       
+      / ---|     /@||| |||@|   /                                 
+     |    /|    /@/ || |||@|  /|                        
+     |   //|   /@/  ||_|||@| / |                        
+     |  // \\ ||@|   /|=|||@| | |                       
+     \\ //   \\||@|  / |/|||@| \\ |                     
+     |//     ||@| /  ,/|||@|   |                        
+     //      ||@|/  /|/||/@/   |                        
+    //|   ,  ||//  /\\|/\\/@/  / /                      
+   //\\   /   \\|/  /H\\|/H\\/  /_/                     
+  // |\\_/     |__/|H\\|/H|\\_/                         
+ |/  |\\        /  |H===H| |                            
+     ||\\      /|  |H|||H| |                            
+     ||______/ |  |H|||H| |                             
+      \\_/ _/  _/  |L|||J| \\_                          
+      _/  ___/   ___\\__/___ '-._                       
+     /__________/===\\__/===\\---'                      
+                                                        
+`;
+
+const argv = process.argv;
+console.log(template('有朋自远方来，不亦乐乎！'));
+}
 
 // 注册命令
 function registerCommand () {

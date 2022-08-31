@@ -1,6 +1,6 @@
 {
-  "name": "@zzs-cli-dev/init",
-  "version": "1.0.4",
+  "name": "@zzs-cli-dev/request",
+  "version": "1.0.0",
   "description": "> TODO: description",
   "author": "xyj <296576733@qq.com>",
   "homepage": "https://github.com/ITBZR/zzs-cli-dev#readme",
@@ -21,20 +21,12 @@
     "url": "git+https://github.com/ITBZR/zzs-cli-dev.git"
   },
   "scripts": {
-    "test": "node ./__tests__/@zzs-cli-dev/init.test.js"
+    "test": "node ./__tests__/@zzs-cli-dev/request.test.js"
   },
   "bugs": {
     "url": "https://github.com/ITBZR/zzs-cli-dev/issues"
   },
   "dependencies": {
-    "@zzs-cli-dev/command": "file: ../../models/command",
-    "@zzs-cli-dev/log": "file: ../../utils/log",
-    "@zzs-cli-dev/request": "file: ../../utils/request",
-    "@zzs-cli-dev/utils": "file: ../../utils/utils",
-    "@zzs-cli-dev/package": "file: ../../models/package",
-    "fs-extra": "^10.1.0",
-    "inquirer": "^8.2.4",
-    "semver": "^7.3.7",
-    "user-home": "^3.0.0"
+    "axios": "^0.27.2"
   }
 }
