@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-23 09:33:00
- * @LastEditTime: 2022-08-25 11:35:51
+ * @LastEditTime: 2022-08-31 14:27:39
  */
 'use strict';
 const path = require('path')
@@ -95,7 +95,7 @@ async function exec(argv) {
                 process.exit(e)
             })
 
-            // window mac兼容
+            // window mac兼容 
             function spawn (command, args, options) {
                 const win32 = process.platform === 'win32'
                 

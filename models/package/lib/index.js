@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-23 10:13:34
- * @LastEditTime: 2022-08-30 18:31:19
+ * @LastEditTime: 2022-08-31 16:16:13
  */
 'use strict';
 
@@ -108,6 +108,7 @@ class Package {
             })
         }
         this.packageVersion = latestPackageVersion
+        console.log(latestPackageVersion, 'latestPackageVersion')
         return latestFilePath
     }
 

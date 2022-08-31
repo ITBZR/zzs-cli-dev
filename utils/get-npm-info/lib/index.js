@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-22 08:59:50
- * @LastEditTime: 2022-08-24 10:15:15
+ * @LastEditTime: 2022-08-31 16:32:15
  */
 'use strict';
 const axios = require('axios')
@@ -46,6 +46,8 @@ async function getNpmSemverVersions(baseVersion, npmName) {
 
 async function getNpmLatestVersion (baseVersion, npmName) {
     const versions = await getNpmVersions(baseVersion, npmName)
+    console.log('versions', versions);
+    
     if (versions && versions.length) {
         return versions[versions.length - 1]
     }
