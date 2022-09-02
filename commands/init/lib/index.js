@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: BZR
  * @Date: 2022-08-22 16:31:54
- * @LastEditTime: 2022-08-31 17:36:07
+ * @LastEditTime: 2022-09-02 11:24:24
  */
 'use strict';
 const fs = require('fs')
@@ -64,6 +64,7 @@ class InitCommand extends Command {
             }
             if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
                 log.verbose('自定义安装')
+                await this.installCustomTemplate()
                 // 自定义安装
                 return
             }
@@ -116,7 +117,8 @@ class InitCommand extends Command {
             throw error
         }
         // 1.模板渲染
-        const ignore = ['noode_modules/**']
+        const templateIgnore = this.templateInfo.ignore || []
+        const ignore = ['**/noode_modules/**', '**.png', ...templateIgnore]
         await this.ejsRender({ignore})
         // 2.依赖安装
         const { startCommand, installCommand } = this.templateInfo
@@ -158,7 +160,25 @@ class InitCommand extends Command {
     }
 
     async installCustomTemplate() {
-        log.verbose('安装自定义模板')
+        if (await this.templateNpm.exists()) {
+            const rootFile = this.templateNpm.getRootFilePath()
+            if (fs.existsSync(rootFile)) {
+                log.notice('开始执行自定义安装')
+                const options = {
+                    templateInfo: this.templateInfo,
+                    templatePath: path.resolve(this.templateNpm.cacheFilePath, 'template'),
+                    targetPath: process.cwd(),
+                    projectInfo: this.projectInfo
+                }
+                const code = `require('${rootFile}')(${JSON.stringify(options)})`
+                // const code = `require('C:/Users/l1536/Desktop/zzs-cli-dev-template/zzs-cli-dev-template-custom-vue3')(${JSON.stringify(options)})`
+                log.verbose('code', code)
+                await utils.execAsync('node', ['-e', code], { stdio: 'inherit', cwd: process.cwd() })
+                log.success('自定义模板安装成功')
+            } else {
+                throw new Error('自定义模板入口文件不存在')
+            }
+        }
     }
 
     // 下载模板
@@ -265,67 +285,99 @@ class InitCommand extends Command {
             return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(name)
         }
         let projectInfo = {}
-        if (type === TYPE_PROJECT) {
-            const promptList = [
-                {
-                    type: 'input',
-                    name: 'projectVersion',
-                    message: '请输入项目版本号',
-                    default: '1.0.0',
-                    validate: function (version) {
-                        const done = this.async()
-                        setTimeout(function () {
-                            if (!semver.valid(version)) {
-                                done('请输入合法的项目版本号')
-                                return
-                            }
-                            done(null, true)
-                        }, 0)
-                    },
-                    filter: function (version) {
-                        return version
-                    }
-                },
-                {
-                    type: 'list',
-                    name: 'projectTemplate',
-                    message: '请选择项目模板',
-                    choices: this.createTemplateChoice()
-                }
-            ]
-            const projectNamePrompt = {
+
+        const title = type === TYPE_COMPONENT ? '组件' : '项目'
+        let promptList = [
+            {
                 type: 'input',
-                name: 'projectName',
-                message: '请输入项目名称',
-                default: '',
-                validate: function (name) {
+                name: 'projectVersion',
+                message: `请输入${title}版本号`,
+                default: '1.0.0',
+                validate: function (version) {
                     const done = this.async()
                     setTimeout(function () {
-                        if (!validateProjectName(name)) {
-                            done('请输入合法的项目名称')
+                        if (!semver.valid(version)) {
+                            done('请输入合法的项目版本号')
                             return
                         }
                         done(null, true)
                     }, 0)
                 },
-                filter: function (name) {
-                    return name
+                filter: function (version) {
+                    return version
                 }
+            },
+            {
+                type: 'list',
+                name: 'projectTemplate',
+                message: `请选择${title}模板`,
+                choices: this.createTemplateChoice()
             }
-            if (!validateProjectName(this.projectName)) {
-                promptList.unshift(projectNamePrompt)
-            } else {
-                projectInfo.name = this.projectName
+        ]
+        const projectNamePrompt = {
+            type: 'input',
+            name: 'projectName',
+            message: `请输入${title}名称`,
+            default: '',
+            validate: function (name) {
+                const done = this.async()
+                setTimeout(function () {
+                    if (!validateProjectName(name)) {
+                        done(`请输入合法的${title}名称`)
+                        return
+                    }
+                    done(null, true)
+                }, 0)
+            },
+            filter: function (name) {
+                return name
             }
-            // 4.获取项目的基本信息
-            const info = await inquirer.prompt(promptList)
-            projectInfo = {
-                ...projectInfo,
-                type,
-                ...info
-            }
-        } else {
         }
+        const componentDescriptionPrompt = {
+            type: 'input',
+            name: 'componentDescription',
+            message: `请输入组件描述名称`,
+            validate: function (v) {
+                const done = this.async()
+                setTimeout(function () {
+                    if (!v) {
+                        done(`请输入组件描述`)
+                        return
+                    }
+                    done(null, true)
+                }, 0)
+            },
+            filter: function (name) {
+                return name
+            }
+        }
+        if (!validateProjectName(this.projectName)) {
+            promptList.unshift(projectNamePrompt)
+        } else {
+            projectInfo.name = this.projectName
+        }
+        if (type === TYPE_PROJECT) {
+            this.template = this.template.filter(template => template.tag.includes('project'))
+        } else {
+            this.template = this.template.filter(template => template.tag.includes('component'))
+            promptList.push(componentDescriptionPrompt)
+        }
+
+        promptList = promptList.map((prompt) => {
+            if (prompt.name === 'projectTemplate') {
+                prompt.choices = this.createTemplateChoice()
+            }
+            return prompt
+        })
+
+        // 4.获取项目的基本信息
+        const info = await inquirer.prompt(promptList)
+        projectInfo = {
+            ...projectInfo,
+            type,
+            ...info
+        }
+
         if (projectInfo.projectName) {
             // 大驼峰变横线分割
             projectInfo.name = require('kebab-case')(projectInfo.projectName).replace(/^-/, '')
